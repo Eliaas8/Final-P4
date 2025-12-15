@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Gestión de Talleres</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="{{ url_for('static', filename='custom.css') }}" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top py-3"
+         style="background: rgba(10, 20, 35, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div class="container">
+            <a class="navbar-brand fw-bold navbar-title" href="/">
+                <i class="bi bi-mortarboard-fill me-2"></i>Sistema de Gestión de Talleres de Formación
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto d-flex gap-2">
+                    <a class="btn btn-neon-blue btn-sm" href="/">Estudiantes</a>
+                    {% if is_admin %}
+                        <a class="btn btn-neon-purple btn-sm" href="/admin">Panel Profesores</a>
+                        <a class="btn btn-neon-red btn-sm" href="/logout">Salir</a>
+                    {% else %}
+                        <a class="btn btn-neon-green btn-sm" href="/login">Acceso Profesores</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="modal fade" id="studentRegModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-panel">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold text-info">
+                        <i class="bi bi-ticket-perforated-fill me-2"></i>Inscripción
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-secondary mb-2">Ingresa tu nombre completo para confirmar:</p>
+                    <input type="text" id="studentNameInput" class="form-control mb-3" placeholder="Ej: Juan Pérez">
+                    <input type="hidden" id="targetWorkshopId">
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-mint" onclick="confirmRegistration()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function registerToWorkshop(workshopId) {
+            document.getElementById('targetWorkshopId').value = workshopId;
+            document.getElementById('studentNameInput').value = '';
+            var myModal = new bootstrap.Modal(document.getElementById('studentRegModal'));
+            myModal.show();
+        }
+
+        function confirmRegistration() {
+            const workshopId = document.getElementById('targetWorkshopId').value;
+            const studentName = document.getElementById('studentNameInput').value;
+
+            if (!studentName || studentName.trim() === "") {
+                alert("Por favor ingresa tu nombre.");
+                return;
+            }
+
+            const modalEl = document.getElementById('studentRegModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            modalInstance.hide();
+
+            fetch(`/api/workshops/${workshopId}/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ student_name: studentName.trim() })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || "¡Registro Exitoso!");
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Error de conexión.");
+            });
+        }
+    </script>
+</body>
+</html>

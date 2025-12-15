@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-white mb-0">Panel de Administración</h2>
+        <p class="text-secondary small">Gestiona tus talleres y horarios</p>
+    </div>
+    <button class="btn btn-mint shadow-lg" data-bs-toggle="modal" data-bs-target="#createModal">
+        <i class="bi bi-plus-lg me-2"></i>Nuevo Taller
+    </button>
+</div>
+
+<div class="card glass-panel p-4 border-0">
+    <div class="table-responsive">
+        <table class="table table-borderless text-white align-middle mb-0">
+            <thead class="text-secondary border-bottom border-secondary opacity-50">
+                <tr>
+                    <th class="fw-light text-uppercase small ls-1">Nombre</th>
+                    <th class="fw-light text-uppercase small ls-1">Categoría</th>
+                    <th class="fw-light text-uppercase small ls-1">Fecha y Hora</th>
+                    <th class="fw-light text-uppercase small ls-1">Lugar</th>
+                    <th class="text-end fw-light text-uppercase small ls-1">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for workshop in workshops %}
+                <tr class="border-bottom border-dark">
+                    <td class="fw-bold py-3">{{ workshop.name }}</td>
+                    <td>
+                        <span class="badge bg-dark border border-info text-info rounded-pill fw-normal px-3">
+                            {{ workshop.category }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <span>{{ workshop.date }}</span>
+                            <span class="small text-muted">{{ workshop.time }}</span>
+                        </div>
+                    </td>
+                    <td class="text-muted">{{ workshop.location }}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-icon-neon edit me-1" data-bs-toggle="modal" data-bs-target="#editModal{{ workshop.id }}">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <a href="/admin/delete/{{ workshop.id }}" class="btn btn-sm btn-icon-neon delete"
+                           onclick="return confirm('¿Eliminar {{ workshop.name }}?')">
+                            <i class="bi bi-trash-fill"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center py-5 text-muted">No hay talleres activos.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="createModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel">
+            <form action="/admin/create" method="POST">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-white">Crear Nuevo Taller</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Título del Taller</label>
+                        <input type="text" name="name" class="form-control" placeholder="Ej: Intro a Python" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Descripción</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Detalles breves..."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Fecha</label>
+                            <input type="date" name="date" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Hora</label>
+                            <input type="time" name="time" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Lugar</label>
+                            <input type="text" name="location" class="form-control" placeholder="Zoom / Sala 1" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Categoría</label>
+                            <select name="category" class="form-select">
+                                <option value="Tecnología">Tecnología</option>
+                                <option value="Programación">Programación</option>
+                                <option value="Negocios">Negocios</option>
+                                <option value="Inglés">Inglés</option>
+                                <option value="Habilidades Blandas">Habilidades Blandas</option>
+                                <option value="Electricidad / Electrónica">Electricidad</option>
+                                <option value="Hotelería / Turismo">Hotelería</option>
+                                <option value="Química">Química</option>
+                                <option value="Finanzas">Finanzas</option>
+                                <option value="Artes">Artes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-mint">Guardar Taller</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% for workshop in workshops %}
+<div class="modal fade" id="editModal{{ workshop.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel">
+            <form action="/admin/edit/{{ workshop.id }}" method="POST">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-white">Editar Taller</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Título</label>
+                        <input type="text" name="name" class="form-control" value="{{ workshop.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Descripción</label>
+                        <textarea name="description" class="form-control" rows="2">{{ workshop.description }}</textarea>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Fecha</label>
+                            <input type="date" name="date" class="form-control" value="{{ workshop.date }}" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Hora</label>
+                            <input type="time" name="time" class="form-control" value="{{ workshop.time }}" required>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Lugar</label>
+                            <input type="text" name="location" class="form-control" value="{{ workshop.location }}" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Categoría</label>
+                            <select name="category" class="form-select">
+                                <option value="Tecnología" {% if workshop.category == 'Tecnología' %}selected{% endif %}>Tecnología</option>
+                                <option value="Programación" {% if workshop.category == 'Programación' %}selected{% endif %}>Programación</option>
+                                <option value="Negocios" {% if workshop.category == 'Negocios' %}selected{% endif %}>Negocios</option>
+                                <option value="Inglés" {% if workshop.category == 'Inglés' %}selected{% endif %}>Inglés</option>
+                                <option value="Habilidades Blandas" {% if workshop.category == 'Habilidades Blandas' %}selected{% endif %}>Habilidades Blandas</option>
+                                <option value="Electricidad / Electrónica" {% if workshop.category == 'Electricidad / Electrónica' %}selected{% endif %}>Electricidad</option>
+                                <option value="Hotelería / Turismo" {% if workshop.category == 'Hotelería / Turismo' %}selected{% endif %}>Hotelería</option>
+                                <option value="Química" {% if workshop.category == 'Química' %}selected{% endif %}>Química</option>
+                                <option value="Finanzas" {% if workshop.category == 'Finanzas' %}selected{% endif %}>Finanzas</option>
+                                <option value="Artes" {% if workshop.category == 'Artes' %}selected{% endif %}>Artes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-mint">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
